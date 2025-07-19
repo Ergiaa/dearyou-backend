@@ -15,6 +15,12 @@ A secure and scalable backend for DearYou - A platform for writing and sharing e
   - Public/private visibility control
   - Unique slugs for sharing
   - Owner-only modifications
+  - Rich text content support
+  - Read count tracking
+  - Pagination for listing
+  - URL-safe slugs with title preview
+  - Guest letter creation and management
+  - Secure guest access tokens
 
 - **Security**
   - UUIDv7 for time-sortable IDs
@@ -206,6 +212,244 @@ Response:
 {
   "status": 200,
   "message": "Password updated successfully"
+}
+```
+
+### Letters
+
+#### Create a new letter (authenticated)
+
+```http
+POST /api/letters
+Authorization: Bearer <token>
+Content-Type: application/json
+
+{
+  "title": "My Dear Friend",  // optional
+  "content": "{\"type\":\"doc\",\"content\":[...]}", // rich text JSON
+  "isPublic": true  // optional, defaults to false
+}
+```
+
+Response:
+
+```json
+{
+  "status": 201,
+  "message": "Letter created successfully",
+  "data": {
+    "id": "019820ae-339f-787a-90ae-24d10d16ce55",
+    "title": "My Dear Friend",
+    "content": "{\"type\":\"doc\",\"content\":[...]}",
+    "slug": "my-dear-friend-abc123xyz456",
+    "isPublic": true,
+    "readCount": 0,
+    "createdAt": "2024-01-19T03:15:44.160Z",
+    "updatedAt": "2024-01-19T03:15:44.160Z",
+    "author": {
+      "id": "019820ae-339f-787a-90ae-24d10d16ce55",
+      "name": "John Doe"
+    }
+  }
+}
+```
+
+#### Get a letter by slug (public access)
+
+```http
+GET /api/letters/:slug
+```
+
+Response:
+
+```json
+{
+  "status": 200,
+  "message": "Letter retrieved successfully",
+  "data": {
+    "id": "019820ae-339f-787a-90ae-24d10d16ce55",
+    "title": "My Dear Friend",
+    "content": "{\"type\":\"doc\",\"content\":[...]}",
+    "slug": "my-dear-friend-abc123xyz456",
+    "isPublic": true,
+    "readCount": 1,
+    "createdAt": "2024-01-19T03:15:44.160Z",
+    "updatedAt": "2024-01-19T03:15:44.160Z",
+    "author": {
+      "id": "019820ae-339f-787a-90ae-24d10d16ce55",
+      "name": "John Doe"
+    }
+  }
+}
+```
+
+#### Get a letter by ID (owner only)
+
+```http
+GET /api/letters/my/:id
+Authorization: Bearer <token>
+```
+
+Response: Same as get by slug
+
+#### Create a new letter (guest)
+
+```http
+POST /api/letters/guest
+Content-Type: application/json
+
+{
+  "title": "My Dear Friend",  // optional
+  "content": "{\"type\":\"doc\",\"content\":[...]}", // rich text JSON
+  "isPublic": true  // optional, defaults to true
+}
+```
+
+Response:
+
+```json
+{
+  "status": 201,
+  "message": "Letter created successfully",
+  "data": {
+    "id": "019820ae-339f-787a-90ae-24d10d16ce55",
+    "title": "My Dear Friend",
+    "content": "{\"type\":\"doc\",\"content\":[...]}",
+    "slug": "my-dear-friend-abc123xyz456",
+    "isPublic": true,
+    "readCount": 0,
+    "createdAt": "2024-01-19T03:15:44.160Z",
+    "updatedAt": "2024-01-19T03:15:44.160Z",
+    "guestToken": "a1b2c3d4..." // Save this token to manage the letter later
+  }
+}
+```
+
+#### Update a letter (authenticated)
+
+```http
+PATCH /api/letters/:id
+Authorization: Bearer <token>
+Content-Type: application/json
+
+{
+  "title": "Updated Title",  // optional
+  "content": "{\"type\":\"doc\",\"content\":[...]}", // optional
+  "isPublic": false  // optional
+}
+```
+
+Response:
+
+```json
+{
+  "status": 200,
+  "message": "Letter updated successfully",
+  "data": {
+    "id": "019820ae-339f-787a-90ae-24d10d16ce55",
+    "title": "Updated Title",
+    "content": "{\"type\":\"doc\",\"content\":[...]}",
+    "slug": "updated-title-abc123xyz456",
+    "isPublic": false,
+    "readCount": 1,
+    "createdAt": "2024-01-19T03:15:44.160Z",
+    "updatedAt": "2024-01-19T03:16:00.000Z",
+    "author": {
+      "id": "019820ae-339f-787a-90ae-24d10d16ce55",
+      "name": "John Doe"
+    }
+  }
+}
+```
+
+#### Update a letter (guest)
+
+```http
+PATCH /api/letters/guest/:id
+Content-Type: application/json
+
+{
+  "title": "Updated Title",  // optional
+  "content": "{\"type\":\"doc\",\"content\":[...]}", // optional
+  "isPublic": false,  // optional
+  "guestToken": "a1b2c3d4..." // Required, from letter creation
+}
+```
+
+Response: Same as create response (without guestToken)
+
+#### Delete a letter (authenticated)
+
+```http
+DELETE /api/letters/:id
+Authorization: Bearer <token>
+```
+
+Response:
+
+```json
+{
+  "status": 200,
+  "message": "Letter deleted successfully"
+}
+```
+
+#### Delete a letter (guest)
+
+```http
+DELETE /api/letters/guest/:id
+Content-Type: application/json
+
+{
+  "guestToken": "a1b2c3d4..." // Required, from letter creation
+}
+```
+
+Response:
+
+```json
+{
+  "status": 200,
+  "message": "Letter deleted successfully"
+}
+```
+
+#### List my letters (authenticated only)
+
+```http
+GET /api/letters?page=1&limit=20
+Authorization: Bearer <token>
+```
+
+Response:
+
+```json
+{
+  "status": 200,
+  "message": "Letters retrieved successfully",
+  "data": {
+    "items": [
+      {
+        "id": "019820ae-339f-787a-90ae-24d10d16ce55",
+        "title": "My Dear Friend",
+        "content": "{\"type\":\"doc\",\"content\":[...]}",
+        "slug": "my-dear-friend-abc123xyz456",
+        "isPublic": true,
+        "readCount": 1,
+        "createdAt": "2024-01-19T03:15:44.160Z",
+        "updatedAt": "2024-01-19T03:15:44.160Z",
+        "author": {
+          "id": "019820ae-339f-787a-90ae-24d10d16ce55",
+          "name": "John Doe"
+        }
+      }
+      // ... more items
+    ],
+    "total": 42,
+    "page": 1,
+    "limit": 20,
+    "hasMore": true
+  }
 }
 ```
 
