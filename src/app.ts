@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import routes from './routes';
 import { errorHandler } from './middlewares/error.middleware';
+import { sendError } from './utils/response.utils';
 
 const app = express();
 
@@ -17,7 +18,7 @@ app.use(errorHandler);
 
 // 404 handler
 app.use((_req, res) => {
-  res.status(404).json({ error: 'Not Found' });
+  sendError(res, 'Route not found', 404);
 });
 
 export default app;

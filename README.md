@@ -103,48 +103,141 @@ A secure and scalable backend for DearYou - A platform for writing and sharing e
 
 #### Register a new user
 
-\`\`\`
+```http
 POST /api/auth/register
 Content-Type: application/json
 
 {
-"email": "user@example.com",
-"password": "secure_password",
-"name": "John Doe" // optional
+  "email": "user@example.com",
+  "password": "secure_password",
+  "name": "John Doe"  // optional
 }
-\`\`\`
+```
+
+Response:
+
+```json
+{
+  "status": 201,
+  "message": "User registered successfully",
+  "data": {
+    "token": "eyJhbG...",
+    "user": {
+      "id": "019820ae-339f-787a-90ae-24d10d16ce55",
+      "email": "user@example.com",
+      "name": "John Doe",
+      "createdAt": "2024-01-19T03:15:44.160Z",
+      "updatedAt": "2024-01-19T03:15:44.160Z"
+    }
+  }
+}
+```
 
 #### Login
 
-\`\`\`
+```http
 POST /api/auth/login
 Content-Type: application/json
 
 {
-"email": "user@example.com",
-"password": "secure_password"
+  "email": "user@example.com",
+  "password": "secure_password"
 }
-\`\`\`
+```
+
+Response:
+
+```json
+{
+  "status": 200,
+  "message": "Login successful",
+  "data": {
+    "token": "eyJhbG...",
+    "user": {
+      "id": "019820ae-339f-787a-90ae-24d10d16ce55",
+      "email": "user@example.com",
+      "name": "John Doe",
+      "createdAt": "2024-01-19T03:15:44.160Z",
+      "updatedAt": "2024-01-19T03:15:44.160Z"
+    }
+  }
+}
+```
 
 #### Get user profile
 
-\`\`\`
+```http
 GET /api/auth/profile
 Authorization: Bearer <token>
-\`\`\`
+```
+
+Response:
+
+```json
+{
+  "status": 200,
+  "message": "Profile retrieved successfully",
+  "data": {
+    "id": "019820ae-339f-787a-90ae-24d10d16ce55",
+    "email": "user@example.com",
+    "name": "John Doe",
+    "createdAt": "2024-01-19T03:15:44.160Z",
+    "updatedAt": "2024-01-19T03:15:44.160Z"
+  }
+}
+```
 
 #### Update password
 
-\`\`\`
-POST /api/auth/update-password
+```http
+PATCH /api/auth/password
 Authorization: Bearer <token>
 Content-Type: application/json
 
 {
-"oldPassword": "current_password",
-"newPassword": "new_password"
+  "oldPassword": "current_password",
+  "newPassword": "new_password"
 }
-\`\`\`
+```
+
+Response:
+
+```json
+{
+  "status": 200,
+  "message": "Password updated successfully"
+}
+```
+
+### Error Responses
+
+#### Validation Error
+
+```json
+{
+  "status": 400,
+  "message": "Validation failed",
+  "errors": [
+    {
+      "field": "email",
+      "message": "Invalid email format"
+    },
+    {
+      "field": "password",
+      "message": "Password must be at least 8 characters"
+    }
+  ]
+}
+```
+
+#### Authentication Error
+
+```json
+{
+  "status": 401,
+  "message": "Authentication required"
+}
+```
 
 ## 📁 Project Structure
 

@@ -1,16 +1,23 @@
 import { Router } from 'express';
 import { AuthController } from '../controllers/auth.controller';
 import { authenticate } from '../middlewares/auth.middleware';
+import { validate } from '../middlewares/validation.middleware';
+import { registerSchema, loginSchema, updatePasswordSchema } from '../validations/auth.validation';
 
 const router = Router();
 const authController = new AuthController();
 
-// Public routes
-router.post('/register', authController.register);
-router.post('/login', authController.login);
+// Public routes with validation
+router.post('/register', validate(registerSchema), authController.register);
+router.post('/login', validate(loginSchema), authController.login);
 
-// Protected routes
+// Protected routes with validation
 router.get('/profile', authenticate, authController.getProfile);
-router.post('/update-password', authenticate, authController.updatePassword);
+router.patch(
+  '/password',
+  authenticate,
+  validate(updatePasswordSchema),
+  authController.updatePassword,
+);
 
 export default router;

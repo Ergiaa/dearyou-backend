@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { AuthError } from '../types/auth.types';
+import { sendError } from '../utils/response.utils';
 
 export const errorHandler = (
   error: Error,
@@ -10,16 +11,10 @@ export const errorHandler = (
   console.error('Error:', error.message);
 
   if (error instanceof AuthError) {
-    res.status(401).json({
-      error: 'Authentication Error',
-      message: error.message,
-    });
+    sendError(res, error.message, 401);
     return;
   }
 
   // Handle other types of errors
-  res.status(500).json({
-    error: 'Internal Server Error',
-    message: 'An unexpected error occurred',
-  });
+  sendError(res, 'An unexpected error occurred');
 };
