@@ -1,0 +1,42 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @db.Uuid
+  email     String   @unique
+  password  String
+  name      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  letters   Letter[]
+
+  @@map("users")
+}
+
+model Letter {
+  id          String   @id @db.Uuid
+  title       String   @db.VarChar(255)
+  content     String   @db.Text
+  slug        String   @unique
+  isPublic    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relationships
+  authorId    String   @db.Uuid
+  author      User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  // Metadata
+  tags        String[] @default([])
+  readCount   Int      @default(0)
+
+  @@index([authorId])
+  @@index([slug])
+  @@map("letters")
+} 
